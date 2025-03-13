@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.banka_3_mobile.bank.repository.BankRepository
+import com.example.banka_3_mobile.user.repository.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -17,7 +18,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class VerificationViewModel @Inject constructor(
-    private val bankRepository: BankRepository
+    private val bankRepository: BankRepository,
+    private val userRepository: UserRepository
 ): ViewModel()
 {
     private val _state = MutableStateFlow(VerificationContract.VerificationUiState())
@@ -32,7 +34,7 @@ class VerificationViewModel @Inject constructor(
     }
 
     init {
-        fetchPayments()
+        fetchRequests()
         observeEvents()
     }
 
@@ -40,20 +42,25 @@ class VerificationViewModel @Inject constructor(
         viewModelScope.launch {
             events.collect {
                 when (it) {
-                    VerificationContract.VerificationUIEvent.DeclinePending -> TODO()
-                    VerificationContract.VerificationUIEvent.VerifyPending -> TODO()
+                    is VerificationContract.VerificationUIEvent.DeclinePending -> declinePendingRequest(it.id)
+                    is VerificationContract.VerificationUIEvent.VerifyPending -> acceptPendingRequest(it.id)
+                    VerificationContract.VerificationUIEvent.PullToRefreshTrigger -> onPullToRefreshRequest()
                 }
             }
         }
     }
 
-    private fun fetchPayments() {
+    private fun fetchRequests() {
         viewModelScope.launch {
             try {
-                val payments = withContext(Dispatchers.IO) {
-                    bankRepository.getPayments()
+                val activeRequests = withContext(Dispatchers.IO) {
+                    userRepository.getActiveVerificationRequests()
                 }
-                setState { copy (allPaymentsRequests = payments.content) }
+                val requestHistory = withContext(Dispatchers.IO) {
+                    userRepository.getVerificationHistory()
+                }
+                setState { copy (activeRequests = activeRequests,
+                    requestHistory = requestHistory) }
             } catch (e: Exception) {
                 setState { copy(error = e.message) }
                 Log.e("raf", "Error fetching payments: ${e.message}")
@@ -62,6 +69,48 @@ class VerificationViewModel @Inject constructor(
                 Log.d("raf", "Fetching: false")
             }
 
+        }
+    }
+
+    private fun acceptPendingRequest(id: Long){
+        viewModelScope.launch {
+            try {
+                userRepository.acceptVerificationRequest(id)
+                fetchRequests()
+            }catch (e: Exception) {
+                setState { copy(error = e.message) }
+                Log.e("raf", "Error fetching payments: ${e.message}")
+            }
+        }
+    }
+
+    private fun declinePendingRequest(id: Long) {
+        viewModelScope.launch {
+            try {
+                userRepository.denyVerificationRequest(id)
+                fetchRequests()
+            }catch (e: Exception) {
+                setState { copy(error = e.message) }
+                Log.e("raf", "Error fetching payments: ${e.message}")
+            }
+        }
+    }
+
+    private fun onPullToRefreshRequest() {
+        setState { copy(isRefreshing = true)}
+        viewModelScope.launch {
+            try {
+                withContext(Dispatchers.IO) {
+                    fetchRequests()
+                }
+                setState { copy(isRefreshing = true)}
+            }
+            catch (e: Exception) {
+                setState { copy(error = e.message) }
+                Log.e("raf", "Error fetching payments: ${e.message}")
+            } finally {
+                setState { copy(isRefreshing = false)}
+            }
         }
     }
 

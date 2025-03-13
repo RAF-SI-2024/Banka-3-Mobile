@@ -1,27 +1,38 @@
 package com.example.banka_3_mobile.verification
 
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.sharp.Check
+import androidx.compose.material.icons.sharp.Close
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -29,6 +40,14 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
+import com.example.banka_3_mobile.verification.mapper.mapChangeLimitDetails
+import com.example.banka_3_mobile.verification.mapper.mapPaymentOrTransferDetails
+import com.example.banka_3_mobile.verification.model.VerificationRequest
+import com.example.banka_3_mobile.verification.model.VerificationStatus
+import com.example.banka_3_mobile.verification.model.VerificationType
+import java.time.Duration
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 fun NavGraphBuilder.verificationPage(
     route: String,
@@ -84,13 +103,18 @@ fun VerifyColumn(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(24.dp).padding(top = 16.dp),
+            .padding(24.dp)
+            .padding(top = 16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         VerifyHeader(
             state = state,
             eventPublisher = eventPublisher,
             onClose = onClose
+        )
+        VerificationsColumn(
+            state = state,
+            eventPublisher = eventPublisher
         )
     }
 }
@@ -109,5 +133,238 @@ fun VerifyHeader(
             Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "back")
         }
     }
-    Text(text = "All payments will be listed here.", fontWeight = FontWeight.Bold, fontSize = 26.sp)
 }
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun VerificationsColumn (
+    state: VerificationContract.VerificationUiState,
+    eventPublisher: (uiEvent: VerificationContract.VerificationUIEvent) -> Unit,
+){
+    val scrollState = rememberLazyListState()
+    PullToRefreshBox(
+        isRefreshing = state.isRefreshing,
+        onRefresh = { eventPublisher(VerificationContract.VerificationUIEvent.PullToRefreshTrigger) },
+    ) {
+        LazyColumn(
+            state = scrollState,
+            modifier = Modifier
+                .fillMaxSize(),
+            //.padding(it),
+            // horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Top,
+        ) {
+            if (state.activeRequests.isNotEmpty()) {
+                item {
+                    Text(modifier = Modifier.padding(start = 8.dp),  style = MaterialTheme.typography.headlineSmall, text = "Pending Requests")
+                }
+                items(state.activeRequests) { request ->
+                    Column {
+                        ActiveVerificationItem(
+                            data = request,
+                            eventPublisher = eventPublisher
+                        )
+                        //  Spacer(modifier = Modifier.height(16.dp))
+                    }
+
+                }
+            } else {
+                item {
+                    Text(modifier = Modifier.padding(start = 8.dp),  style = MaterialTheme.typography.bodyLarge, text = "You have no pending requests.")
+                }
+            }
+
+            item {
+                Spacer(modifier = Modifier.height(30.dp))
+                Text(modifier = Modifier.padding(start = 8.dp), style = MaterialTheme.typography.headlineSmall, text = "Request History")
+            }
+            items(state.requestHistory) { request ->
+                Column {
+                    InactiveVerificationItem(
+                        data = request,
+                    )
+                    // Spacer(modifier = Modifier.height(16.dp))
+                }
+
+            }
+        }
+    }
+
+}
+
+@Composable
+fun ActiveVerificationItem(
+    data: VerificationRequest,
+    eventPublisher: (uiEvent: VerificationContract.VerificationUIEvent) -> Unit,
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceBright,
+        ),
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column {
+                VerificationLeftContent(data)
+            }
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                IconButton(onClick = {
+                    eventPublisher(VerificationContract.VerificationUIEvent.VerifyPending(data.id))
+                }) {
+                    Icon(
+                        modifier = Modifier
+                            .size(40.dp)
+                            .alpha(0.3f),
+                        imageVector = Icons.Sharp.Check,
+                        contentDescription = "Accept",
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                IconButton(onClick = {
+                    eventPublisher(VerificationContract.VerificationUIEvent.DeclinePending(data.id))
+                }) {
+                    Icon(
+                        modifier = Modifier
+                            .size(40.dp)
+                            .alpha(0.3f),
+                        imageVector = Icons.Sharp.Close,
+                        contentDescription = "Decline",
+                        tint = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+            }
+        }
+    }
+}
+@Composable
+fun InactiveVerificationItem(
+    data: VerificationRequest
+) {
+    val formattedDateTime = try {
+        val ldt = LocalDateTime.parse(data.createdAt)
+        val formatter = DateTimeFormatter.ofPattern("dd MMM yyyy, HH:mm")
+        ldt.format(formatter)
+    } catch (e: Exception) {
+        data.createdAt
+    }
+
+    val expired = if (data.status == VerificationStatus.PENDING) {
+        try {
+            val createdTime = LocalDateTime.parse(data.createdAt)
+            Duration.between(createdTime, LocalDateTime.now()).toMinutes() >= 5
+        } catch (e: Exception) {
+            false
+        }
+    } else {
+        false
+    }
+
+    val displayStatus = if (expired) "EXPIRED" else data.status.name
+    val statusColor = if (expired) Color.DarkGray else when (data.status) {
+        VerificationStatus.APPROVED -> Color.Green
+        VerificationStatus.DENIED -> Color.Red
+        VerificationStatus.PENDING -> Color.Gray
+        VerificationStatus.EXPIRED -> Color.DarkGray
+    }
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceBright,
+        ),
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column {
+                VerificationLeftContent(data)
+            }
+            Column(
+                horizontalAlignment = Alignment.End
+            ) {
+                Text(
+                    text = displayStatus,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.ExtraBold,
+                    color = statusColor
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = formattedDateTime,
+                    style = MaterialTheme.typography.titleSmall,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Normal
+                )
+            }
+        }
+    }
+}
+
+
+@Composable
+fun VerificationLeftContent(data: VerificationRequest) {
+    when (data.verificationType) {
+        VerificationType.PAYMENT, VerificationType.TRANSFER -> {
+            val label = if (data.verificationType == VerificationType.PAYMENT) "Payment" else "Transfer"
+            Text(
+                text = label,
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.ExtraBold,
+            )
+            val details = mapPaymentOrTransferDetails(data.details)
+            details?.let {
+                Text(
+                    text = "-${it.amount}",
+                    color = Color.Red,
+                    style = MaterialTheme.typography.titleSmall,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Normal
+                )
+            }
+        }
+        VerificationType.CHANGE_LIMIT -> {
+            Text(
+                text = "Change Limit",
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.ExtraBold,
+            )
+            val changeDetails = mapChangeLimitDetails(data.details)
+            Text(
+                text = "Acc: ${changeDetails.accountNumber}",
+                style = MaterialTheme.typography.titleSmall,
+                fontSize = 18.sp
+            )
+            Text(
+                text = "${changeDetails.oldLimit} -> ${changeDetails.newLimit}",
+                color = Color.Red,
+                style = MaterialTheme.typography.titleSmall,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Normal
+            )
+        }
+        else -> {
+            Text(
+                text = data.verificationType.name,
+                fontWeight = FontWeight.Bold
+            )
+        }
+    }
+}
+
+
