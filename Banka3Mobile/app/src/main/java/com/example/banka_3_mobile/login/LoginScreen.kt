@@ -105,14 +105,14 @@ fun LoginColumn(
         OutlinedTextField(
             value = state.email,
             onValueChange = { eventPublisher(LoginContract.LoginUIEvent.TypingEmail(it)) },
-            label = { Text("Username") },
-            placeholder = { Text("Enter your username") },
+            label = { Text("Email") },
+            placeholder = { Text("Enter your email") },
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(8.dp)
         )
         if (state.incorrectEmailFormat) {
             Text(
-                text = "Invalid email format",
+                text = "Invalid email format.",
                 color = MaterialTheme.colorScheme.error,
                 style = MaterialTheme.typography.bodyLarge,
                 modifier = Modifier.align(Alignment.Start)
@@ -130,10 +130,14 @@ fun LoginColumn(
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
             shape = RoundedCornerShape(8.dp)
         )
-        /**
-         *
-         * TODO error text here
-         */
+        if (state.incorrectPasswordFormat) {
+            Text(
+                text = "Password can't be shorter than 3 characters.",
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodyLarge,
+                modifier = Modifier.align(Alignment.Start)
+            )
+        }
         Spacer(modifier = Modifier.height(24.dp))
 
         Button(

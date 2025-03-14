@@ -14,6 +14,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -140,14 +141,15 @@ fun HomeHeader(
                 color = Color.Gray
             )
         }
-        Button(onClick = { eventPublisher(HomeContract.HomeUIEvent.ShowLogoutDialog) }) {
-            Text("Logout")
+        Button(onClick = { eventPublisher(HomeContract.HomeUIEvent.ShowLogoutDialog) },
+            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)) {
+            Text("Logout", style = MaterialTheme.typography.bodyLarge, color=MaterialTheme.colorScheme.onSecondary)
         }
     }
     Button(onClick = {
         onVerify()},
-        colors = ButtonDefaults.buttonColors(containerColor = Color.DarkGray)) {
-        Text("Verify")
+        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)) {
+        Text(text = "Verify", color = MaterialTheme.colorScheme.onPrimary, style = MaterialTheme.typography.titleMedium)
     }
 
     if (state.showLogoutDialog) {

@@ -6,6 +6,7 @@ interface LoginContract {
         val email: String = "",
         val password: String = "",
         val incorrectEmailFormat: Boolean = false,
+        val incorrectPasswordFormat: Boolean = false,
         val response: String = "",
         val error: Throwable? = null,
     )

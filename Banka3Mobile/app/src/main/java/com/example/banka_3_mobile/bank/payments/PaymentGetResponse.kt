@@ -1,7 +1,6 @@
 package com.example.banka_3_mobile.bank.payments
 
 import kotlinx.serialization.Serializable
-import java.math.BigDecimal
 
 @Serializable
 data class PaymentGetResponse(
@@ -14,9 +13,3 @@ data class PaymentGetResponse(
 )
 
 
-@Serializable
-enum class PaymentStatus {
-    COMPLETED,
-    CANCELED,
-    PENDING_CONFIRMATION
-}

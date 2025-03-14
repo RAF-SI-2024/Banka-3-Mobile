@@ -38,18 +38,15 @@ class LoginViewModel @Inject constructor(
         Log.d("raf", "Ulazim u init logina")
         if (accountDataStore.data.value.email == "" ||
             accountDataStore.data.value.password == ""
-            //|| accountDataStore.data.value.fullName == ""
         )
             observeEvents()
         else {
 
             setState { copy(
-                // fullName = accountDataStore.data.value.fullName,
                 email = accountDataStore.data.value.email,
                 password = accountDataStore.data.value.password) }
 
             checkOrUpdateToken()
-
             setState{copy(loggedIn = true)}
         }
 
@@ -68,6 +65,9 @@ class LoginViewModel @Inject constructor(
                     }
                     is LoginContract.LoginUIEvent.TypingPassword -> {
                         setState { copy(password = it.password) }
+                        if (state.value.password.length < 3) {
+                            setState { copy(incorrectPasswordFormat = true) }
+                        } else setState { copy(incorrectPasswordFormat = false) }
 
                     }
                 }
@@ -76,21 +76,22 @@ class LoginViewModel @Inject constructor(
     }
 
     private fun validate() {
-        if (!checkEmailValidity())
-            setState { copy(incorrectEmailFormat = true) }
+        val emailValid = checkEmailValidity()
+        val passwordValid = state.value.password.length >= 3
+
+        if (!emailValid || !passwordValid) {
+            setState { copy(
+                incorrectEmailFormat = !emailValid,
+                incorrectPasswordFormat = !passwordValid
+            ) }
+        }
         else {
-            /**
-             * TODO provera da li je user klijent (da nije admin ili employee)
-             * DONE???? Uradjeno ali moram proveriti sa ispravnim kredencijalima
-             */
+
             viewModelScope.launch(Dispatchers.IO) {
                 try {
-                   // withContext(Dispatchers.IO) {
                         val response =
                             userRepository.login(email = state.value.email,
                                 password = state.value.password)
-                        //if (accountDataStore.data.value.email == ""
-                        //)
 
                         if (!isClientToken(response.token)) {
                             setState { copy(error = IllegalArgumentException("Invalid client login credentials")) }
