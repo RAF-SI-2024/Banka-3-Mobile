@@ -41,6 +41,8 @@ object UserNetworkingModule {
             }*/
             .addInterceptor { chain ->
                 val request = chain.request()
+                val customUserAgent = "MobileApp/1.0"
+                val defaultUserAgent = request.header("User-Agent") ?: ""
                 if (!request.url.encodedPath.contains("auth/login/client") &&
                     !request.url.encodedPath.contains("auth/check-token")) {
                     val token = runBlocking {
@@ -49,6 +51,7 @@ object UserNetworkingModule {
                     if (token.isNotEmpty()) {
                         val newRequest = request.newBuilder()
                             .addHeader("Authorization", "Bearer $token")
+                            .header("User-Agent", "$customUserAgent $defaultUserAgent")
                             .build()
                         chain.proceed(newRequest)
                     } else {

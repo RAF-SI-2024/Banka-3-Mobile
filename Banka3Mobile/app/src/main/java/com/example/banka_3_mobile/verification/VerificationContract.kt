@@ -9,6 +9,7 @@ interface VerificationContract {
         val fetching: Boolean = false,
         val error: String? = null,
         val isRefreshing: Boolean = false,
+        val userId: Long? = null
     )
 
     sealed class VerificationUIEvent {

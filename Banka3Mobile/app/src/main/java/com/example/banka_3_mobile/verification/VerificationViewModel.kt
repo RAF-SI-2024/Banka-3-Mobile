@@ -34,6 +34,7 @@ class VerificationViewModel @Inject constructor(
     }
 
     init {
+        fetchUserInfo()
         fetchRequests()
         observeEvents()
     }
@@ -50,6 +51,23 @@ class VerificationViewModel @Inject constructor(
         }
     }
 
+    private fun fetchUserInfo() {
+        viewModelScope.launch {
+            try {
+                val user = withContext(Dispatchers.IO) {
+                    userRepository.getUser()
+                }
+                setState { copy (activeRequests = activeRequests,
+                    requestHistory = requestHistory,
+                    userId = user.id) }
+            } catch (e: Exception) {
+                setState { copy(error = e.message) }
+                Log.e("raf", "Error fetching user: ${e.message}")
+            }
+
+        }
+    }
+
     private fun fetchRequests() {
         viewModelScope.launch {
             try {
@@ -59,8 +77,10 @@ class VerificationViewModel @Inject constructor(
                 val requestHistory = withContext(Dispatchers.IO) {
                     userRepository.getVerificationHistory()
                 }
-                setState { copy (activeRequests = activeRequests,
-                    requestHistory = requestHistory) }
+                setState { copy (activeRequests = activeRequests//.filter { it.id == state.value.userId },
+                        ,
+                    requestHistory = requestHistory//.filter { it.id == state.value.userId }
+                ) }
             } catch (e: Exception) {
                 setState { copy(error = e.message) }
                 Log.e("raf", "Error fetching payments: ${e.message}")

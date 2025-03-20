@@ -1,4 +1,4 @@
-package com.example.banka_3_mobile.bank.payments
+package com.example.banka_3_mobile.bank.payments.model
 
 import kotlinx.serialization.Serializable
 

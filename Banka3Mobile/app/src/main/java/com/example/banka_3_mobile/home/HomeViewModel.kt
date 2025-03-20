@@ -3,7 +3,7 @@ package com.example.banka_3_mobile.home
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.banka_3_mobile.login.LoginContract
+import com.example.banka_3_mobile.bank.repository.BankRepository
 import com.example.banka_3_mobile.user.account.datastore.AccountData
 import com.example.banka_3_mobile.user.account.datastore.AccountDataStore
 import com.example.banka_3_mobile.user.repository.UserRepository
@@ -21,7 +21,8 @@ import javax.inject.Inject
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val dataStore: AccountDataStore,
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
+    private val bankRepository: BankRepository
 ): ViewModel()
 {
     private val _state = MutableStateFlow(HomeContract.HomeUiState())
@@ -36,7 +37,7 @@ class HomeViewModel @Inject constructor(
     }
 
     init {
-        loadUserInfo()
+        loadUserInfoAndAccounts()
         observeEvents()
     }
 
@@ -52,7 +53,7 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    private fun loadUserInfo() {
+    private fun loadUserInfoAndAccounts() {
         viewModelScope.launch {
             try {
                 setState { copy(fetching = true) }
@@ -60,6 +61,8 @@ class HomeViewModel @Inject constructor(
                     val clientResponse = userRepository.getUser()
                     clientResponse.birthDate?.let { Log.d("raf", it) }
                     setState { copy(client = clientResponse) }
+                    val accountResponse = bankRepository.getAccounts()
+                    setState { copy(userAccounts = accountResponse) }
                 }
 
             } catch (e: Exception) {
@@ -88,4 +91,6 @@ class HomeViewModel @Inject constructor(
             }
         }
     }
+
+
 }

@@ -96,10 +96,11 @@ class LoginViewModel @Inject constructor(
                         if (!isClientToken(response.token)) {
                             setState { copy(error = IllegalArgumentException("Invalid client login credentials")) }
                             Log.e("raf", state.value.error?.message!!)
+                            Log.d("raf", state.value.error?.message!!)
                             return@launch
                         }
 
-                        setState { copy(response = response.token) }
+                        setState { copy(response = response.token, error = null) }
                         accountDataStore.updateProfileData(
                             AccountData(
                                 email = state.value.email,
