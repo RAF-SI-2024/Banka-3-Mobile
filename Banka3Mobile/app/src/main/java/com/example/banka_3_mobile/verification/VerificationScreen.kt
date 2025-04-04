@@ -44,6 +44,7 @@ import androidx.navigation.compose.composable
 import com.example.banka_3_mobile.navigation.AppNavigationViewModel
 import com.example.banka_3_mobile.verification.mapper.mapChangeLimitDetails
 import com.example.banka_3_mobile.verification.mapper.mapNewCreditCardVerification
+import com.example.banka_3_mobile.verification.mapper.mapChangeLimitDetails
 import com.example.banka_3_mobile.verification.mapper.mapPaymentOrTransferDetails
 import com.example.banka_3_mobile.verification.model.VerificationRequest
 import com.example.banka_3_mobile.verification.model.VerificationStatus
@@ -117,6 +118,10 @@ fun VerifyColumn(
             state = state,
             eventPublisher = eventPublisher,
         )
+        VerificationsColumn(
+            state = state,
+            eventPublisher = eventPublisher
+        )
     }
 }
 
@@ -132,6 +137,8 @@ fun NavHeader(
     }
 }
 
+
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun VerificationsColumn (
@@ -146,45 +153,41 @@ fun VerificationsColumn (
         LazyColumn(
             state = scrollState,
             modifier = Modifier
-                .fillMaxSize().padding(bottom = 80.dp)
-            ,
+                .fillMaxSize(),
+            //.padding(it),
+            // horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Top,
         ) {
             if (state.activeRequests.isNotEmpty()) {
                 item {
-                    Text(style = MaterialTheme.typography.headlineSmall, text = "Pending Requests")
+                    Text(modifier = Modifier.padding(start = 8.dp),  style = MaterialTheme.typography.headlineSmall, text = "Pending Requests")
                 }
                 items(state.activeRequests) { request ->
                     Column {
                         ActiveVerificationItem(
                             data = request,
-                            eventPublisher = eventPublisher,
+                            eventPublisher = eventPublisher
                         )
-                          Spacer(modifier = Modifier.height(10.dp))
+                        //  Spacer(modifier = Modifier.height(16.dp))
                     }
 
                 }
             } else {
                 item {
-                    Text(style = MaterialTheme.typography.bodyLarge, text = "You have no pending requests.")
+                    Text(modifier = Modifier.padding(start = 8.dp),  style = MaterialTheme.typography.bodyLarge, text = "You have no pending requests.")
                 }
             }
 
             item {
-                Spacer(modifier = Modifier.height(20.dp))
-                if (state.requestHistory.isNotEmpty()) {
-                    Text(style = MaterialTheme.typography.headlineSmall, text = "Request History")
-                } else {
-                    Text(style = MaterialTheme.typography.titleSmall, text = "No previous verification requests found.")
-                }
-
+                Spacer(modifier = Modifier.height(30.dp))
+                Text(modifier = Modifier.padding(start = 8.dp), style = MaterialTheme.typography.headlineSmall, text = "Request History")
             }
             items(state.requestHistory) { request ->
                 Column {
                     InactiveVerificationItem(
                         data = request,
                     )
-                     Spacer(modifier = Modifier.height(10.dp))
+                    // Spacer(modifier = Modifier.height(16.dp))
                 }
 
             }
@@ -201,7 +204,7 @@ fun ActiveVerificationItem(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-        ,
+            .padding(8.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceBright,
@@ -280,7 +283,7 @@ fun InactiveVerificationItem(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-        ,
+            .padding(8.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceBright,
@@ -321,11 +324,13 @@ fun InactiveVerificationItem(
 @Composable
 fun VerificationLeftContent(data: VerificationRequest) {
     when (data.verificationType) {
-        VerificationType.PAYMENT -> {
+
+        VerificationType.PAYMENT, VerificationType.TRANSFER -> {
+            val label = if (data.verificationType == VerificationType.PAYMENT) "Payment" else "Transfer"
             Text(
-                text = "Payment",
+                text = label,
                 style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.ExtraBold
+                fontWeight = FontWeight.ExtraBold,
             )
             val details = mapPaymentOrTransferDetails(data.details)
             details?.let {
@@ -375,6 +380,7 @@ fun VerificationLeftContent(data: VerificationRequest) {
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.ExtraBold
                 )
+
             }
         }
         VerificationType.CHANGE_LIMIT -> {
@@ -387,8 +393,9 @@ fun VerificationLeftContent(data: VerificationRequest) {
             Text(
                 text = changeDetails.accountNumber,
                 style = MaterialTheme.typography.bodyLarge,
-                fontSize = 18.sp
+                fontWeight = FontWeight.ExtraBold,
             )
+
             Text(
                 text = "${changeDetails.oldLimit} -> ${changeDetails.newLimit}",
                 color = MaterialTheme.colorScheme.tertiary,
@@ -434,6 +441,3 @@ fun VerificationLeftContent(data: VerificationRequest) {
         }
     }
 }
-
-
-

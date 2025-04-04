@@ -68,6 +68,7 @@ class VerificationViewModel @Inject constructor(
         }
     }
 
+
     private fun fetchRequests() {
         viewModelScope.launch {
             try {
@@ -77,10 +78,8 @@ class VerificationViewModel @Inject constructor(
                 val requestHistory = withContext(Dispatchers.IO) {
                     userRepository.getVerificationHistory()
                 }
-                setState { copy (activeRequests = activeRequests//.filter { it.id == state.value.userId },
-                        ,
-                    requestHistory = requestHistory//.filter { it.id == state.value.userId }
-                ) }
+                setState { copy (activeRequests = activeRequests,
+                    requestHistory = requestHistory) }
             } catch (e: Exception) {
                 setState { copy(error = e.message) }
                 Log.e("raf", "Error fetching payments: ${e.message}")

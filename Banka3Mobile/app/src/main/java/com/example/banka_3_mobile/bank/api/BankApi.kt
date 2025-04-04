@@ -95,4 +95,5 @@ interface BankApi {
     suspend fun deletePayee(
         @Path("id") id: Long
     ): Response<Unit>
+
 }

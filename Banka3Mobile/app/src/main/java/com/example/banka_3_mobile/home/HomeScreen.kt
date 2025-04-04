@@ -221,11 +221,6 @@ fun UserInfoItem(
             Text("Logout", style = MaterialTheme.typography.bodyLarge, color=MaterialTheme.colorScheme.onSecondary)
         }
     }
-    /*Button(onClick = {
-        onVerify()},
-        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)) {
-        Text(text = "Verify", color = MaterialTheme.colorScheme.onPrimary, style = MaterialTheme.typography.titleMedium)
-    }*/
 
     if (state.showLogoutDialog) {
         LogoutConfirmationDialog(
