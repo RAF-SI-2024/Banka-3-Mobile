@@ -8,5 +8,6 @@ enum class VerificationType {
     LOAN,
     PAYMENT,
     TRANSFER,
-    CHANGE_LIMIT
+    CHANGE_LIMIT,
+    CARD_REQUEST
 }

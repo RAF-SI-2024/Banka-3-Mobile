@@ -169,7 +169,7 @@ class NewPaymentViewModel @Inject constructor(
                     setState { copy(paymentSuccess = true,
                         error = null) }
                 else {
-                    setState { copy(error = "Cannot find receiver account number.") }
+                    setState { copy(error = "Cannot find receiver account number or amount is above the balance.") }
                 }
                 Log.d("raf", "POST for payment response: $response")
 

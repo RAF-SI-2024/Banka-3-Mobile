@@ -43,6 +43,7 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import com.example.banka_3_mobile.navigation.AppNavigationViewModel
 import com.example.banka_3_mobile.verification.mapper.mapChangeLimitDetails
+import com.example.banka_3_mobile.verification.mapper.mapNewCreditCardVerification
 import com.example.banka_3_mobile.verification.mapper.mapPaymentOrTransferDetails
 import com.example.banka_3_mobile.verification.model.VerificationRequest
 import com.example.banka_3_mobile.verification.model.VerificationStatus
@@ -392,6 +393,36 @@ fun VerificationLeftContent(data: VerificationRequest) {
                 text = "${changeDetails.oldLimit} -> ${changeDetails.newLimit}",
                 color = MaterialTheme.colorScheme.tertiary,
                 style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.ExtraBold
+            )
+        }
+        VerificationType.CARD_REQUEST -> {
+            Text(
+                text = "New Card",
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.ExtraBold
+            )
+            val cardDetails = mapNewCreditCardVerification(data.details)
+            Text(
+                text = cardDetails.name,
+                style = MaterialTheme.typography.bodyLarge,
+                fontSize = 18.sp
+            )
+            Text(
+                text = cardDetails.type,
+                style = MaterialTheme.typography.bodyLarge,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.ExtraBold
+            )
+            Text(
+                text = cardDetails.accountNumber,
+                style = MaterialTheme.typography.bodyLarge,
+                fontSize = 18.sp
+            )
+            Text(
+                text = cardDetails.issuer,
+                style = MaterialTheme.typography.bodyLarge,
+                fontSize = 20.sp,
                 fontWeight = FontWeight.ExtraBold
             )
         }

@@ -125,6 +125,11 @@ fun NewTransferScreen(
                 )
             }
             Spacer(modifier = Modifier.height(24.dp))
+            if (state.error!=null) {
+                Text(state.error, color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.ExtraBold)
+                Spacer(modifier = Modifier.height(24.dp))
+            }
             Button(
                 onClick = { eventPublisher(NewTransferContract.NewTransferUiEvent.SendTransaction) },
                 modifier = Modifier

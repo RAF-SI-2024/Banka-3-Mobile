@@ -46,8 +46,8 @@ class NewTransferViewModel @Inject constructor(
                     is NewTransferContract.NewTransferUiEvent.ToAccountSelected ->
                         setState { copy(toAccount = it.toAccountNumber) }
                     is NewTransferContract.NewTransferUiEvent.TypingAmount -> {
-                        isValidForm()
                         setState { copy(amount = it.amount.toInt()) }
+                        isValidForm()
                     }
                     NewTransferContract.NewTransferUiEvent.SendTransaction -> {
                         if (isValidForm())
@@ -113,7 +113,11 @@ class NewTransferViewModel @Inject constructor(
                     )
                 }
                 if (response)
-                    setState { copy(transferSuccess = true) }
+                    setState { copy(transferSuccess = true,
+                        error = null) }
+                else {
+                    setState { copy(error = "You reached over the account limit for transfer.") }
+                }
                 Log.d("raf", "POST for payment response: $response")
 
             } catch (e: Exception) {
