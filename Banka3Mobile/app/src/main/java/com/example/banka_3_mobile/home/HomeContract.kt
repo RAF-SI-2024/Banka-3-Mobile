@@ -1,5 +1,6 @@
 package com.example.banka_3_mobile.home
 
+import com.example.banka_3_mobile.bank.model.AccountGetResponse
 import com.example.banka_3_mobile.user.model.ClientGetResponse
 
 interface HomeContract {
@@ -11,7 +12,8 @@ interface HomeContract {
         val client: ClientGetResponse? = null,
         val error: String? = null,
         val fetching: Boolean = true,
-        val showLogoutDialog: Boolean = false
+        val showLogoutDialog: Boolean = false,
+        val userAccounts: List<AccountGetResponse> = emptyList()
     )
 
     sealed class HomeUIEvent {

@@ -140,6 +140,31 @@ fun LoginColumn(
         }
         Spacer(modifier = Modifier.height(24.dp))
 
+        if (state.error!=null) {
+            state.error.message?.let {
+                /*Text(
+                    text = it,
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.error,
+                    fontWeight = FontWeight.ExtraBold
+                )*/
+                if (state.error.message=="HTTP 401 ") {
+                    Text(
+                        text = "Invalid login credentials for client account.",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.error,
+                        fontWeight = FontWeight.ExtraBold
+                    )
+                } else {
+                    Text(
+                        text = "Unknown error, please try again later.",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.error,
+                        fontWeight = FontWeight.ExtraBold
+                    )
+                }
+            }
+        }
         Button(
             onClick = { eventPublisher(LoginContract.LoginUIEvent.Login) },
             modifier = Modifier

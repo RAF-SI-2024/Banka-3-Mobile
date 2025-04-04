@@ -27,6 +27,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -40,6 +41,9 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
+import com.example.banka_3_mobile.navigation.AppNavigationViewModel
+import com.example.banka_3_mobile.verification.mapper.mapChangeLimitDetails
+import com.example.banka_3_mobile.verification.mapper.mapNewCreditCardVerification
 import com.example.banka_3_mobile.verification.mapper.mapChangeLimitDetails
 import com.example.banka_3_mobile.verification.mapper.mapPaymentOrTransferDetails
 import com.example.banka_3_mobile.verification.model.VerificationRequest
@@ -57,7 +61,9 @@ fun NavGraphBuilder.verificationPage(
 ) {navBackStackEntry ->
 
     val verificationViewModel = hiltViewModel<VerificationViewModel>(navBackStackEntry)
+
     val state by verificationViewModel.state.collectAsState()
+
 
     VerificationScreen(
         state = state,
@@ -66,7 +72,7 @@ fun NavGraphBuilder.verificationPage(
         },
         onClose = {
             navController.navigateUp()
-        }
+        },
     )
 }
 
@@ -86,7 +92,7 @@ fun VerificationScreen(
                         Text(modifier = Modifier.align(Alignment.Center), text = "Loading payments...")
                     }
                 state.error != null ->
-                    Text(color = Color.Red, text = "${state.error}")
+                    Text(color = MaterialTheme.colorScheme.error, text = "${state.error}")
                 else -> {
                     VerifyColumn(state = state, eventPublisher = eventPublisher, onClose = onClose)
                 }
@@ -107,10 +113,10 @@ fun VerifyColumn(
             .padding(top = 16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        VerifyHeader(
+        NavHeader(title = "Requests")
+        VerificationsColumn(
             state = state,
             eventPublisher = eventPublisher,
-            onClose = onClose
         )
         VerificationsColumn(
             state = state,
@@ -120,20 +126,18 @@ fun VerifyColumn(
 }
 
 @Composable
-fun VerifyHeader(
-    state: VerificationContract.VerificationUiState,
-    eventPublisher: (uiEvent: VerificationContract.VerificationUIEvent) -> Unit,
-    onClose: () -> Unit,
+fun NavHeader(
+    title: String
 )  {
     Row(modifier = Modifier
-        .fillMaxWidth()
-        //.border(BorderStroke(2.dp, SolidColor(Color.Red)))
+        .fillMaxWidth().padding(vertical = 8.dp)
         ){
-        IconButton(onClick = { onClose()}) {
-            Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "back")
-        }
+        Text(text = title, style = MaterialTheme.typography.headlineMedium,
+            fontWeight = FontWeight.SemiBold)
     }
 }
+
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -269,11 +273,11 @@ fun InactiveVerificationItem(
     }
 
     val displayStatus = if (expired) "EXPIRED" else data.status.name
-    val statusColor = if (expired) Color.DarkGray else when (data.status) {
+    val statusColor =  when (data.status) {
         VerificationStatus.APPROVED -> Color.Green
-        VerificationStatus.DENIED -> Color.Red
-        VerificationStatus.PENDING -> Color.Gray
-        VerificationStatus.EXPIRED -> Color.DarkGray
+        VerificationStatus.DENIED -> MaterialTheme.colorScheme.error
+        VerificationStatus.PENDING -> MaterialTheme.colorScheme.secondary
+        VerificationStatus.EXPIRED -> MaterialTheme.colorScheme.tertiary
     }
 
     Card(
@@ -300,7 +304,7 @@ fun InactiveVerificationItem(
             ) {
                 Text(
                     text = displayStatus,
-                    fontSize = 16.sp,
+                    fontSize = 20.sp,
                     fontWeight = FontWeight.ExtraBold,
                     color = statusColor
                 )
@@ -320,6 +324,7 @@ fun InactiveVerificationItem(
 @Composable
 fun VerificationLeftContent(data: VerificationRequest) {
     when (data.verificationType) {
+
         VerificationType.PAYMENT, VerificationType.TRANSFER -> {
             val label = if (data.verificationType == VerificationType.PAYMENT) "Payment" else "Transfer"
             Text(
@@ -330,32 +335,102 @@ fun VerificationLeftContent(data: VerificationRequest) {
             val details = mapPaymentOrTransferDetails(data.details)
             details?.let {
                 Text(
-                    text = "-${it.amount}",
-                    color = Color.Red,
-                    style = MaterialTheme.typography.titleSmall,
+                    text = it.fromAccountNumber.toString(),
+                    style = MaterialTheme.typography.bodyLarge,
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Normal
                 )
+                Text(
+                    text = "-${it.amount}",
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.ExtraBold
+                )
+            }
+        }
+        VerificationType.TRANSFER -> {
+            Text(
+                text = "Transfer",
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.ExtraBold
+            )
+            val details = mapPaymentOrTransferDetails(data.details)
+            details?.let {
+                Text(
+                    text = "${it.fromAccountNumber}",
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Normal
+                )
+                Text(
+                    text = "↓",
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.ExtraBold
+                )
+                Text(
+                    text = "${it.toAccountNumber}",
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Normal
+                )
+                Text(
+                    text = it.amount.toString(),
+                    color = MaterialTheme.colorScheme.primary,
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.ExtraBold
+                )
+
             }
         }
         VerificationType.CHANGE_LIMIT -> {
             Text(
                 text = "Change Limit",
                 style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.ExtraBold,
+                fontWeight = FontWeight.ExtraBold
             )
             val changeDetails = mapChangeLimitDetails(data.details)
             Text(
-                text = "Acc: ${changeDetails.accountNumber}",
-                style = MaterialTheme.typography.titleSmall,
+                text = changeDetails.accountNumber,
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = FontWeight.ExtraBold,
+            )
+
+            Text(
+                text = "${changeDetails.oldLimit} -> ${changeDetails.newLimit}",
+                color = MaterialTheme.colorScheme.tertiary,
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.ExtraBold
+            )
+        }
+        VerificationType.CARD_REQUEST -> {
+            Text(
+                text = "New Card",
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.ExtraBold
+            )
+            val cardDetails = mapNewCreditCardVerification(data.details)
+            Text(
+                text = cardDetails.name,
+                style = MaterialTheme.typography.bodyLarge,
                 fontSize = 18.sp
             )
             Text(
-                text = "${changeDetails.oldLimit} -> ${changeDetails.newLimit}",
-                color = Color.Red,
-                style = MaterialTheme.typography.titleSmall,
+                text = cardDetails.type,
+                style = MaterialTheme.typography.bodyLarge,
                 fontSize = 18.sp,
-                fontWeight = FontWeight.Normal
+                fontWeight = FontWeight.ExtraBold
+            )
+            Text(
+                text = cardDetails.accountNumber,
+                style = MaterialTheme.typography.bodyLarge,
+                fontSize = 18.sp
+            )
+            Text(
+                text = cardDetails.issuer,
+                style = MaterialTheme.typography.bodyLarge,
+                fontSize = 20.sp,
+                fontWeight = FontWeight.ExtraBold
             )
         }
         else -> {
@@ -366,5 +441,3 @@ fun VerificationLeftContent(data: VerificationRequest) {
         }
     }
 }
-
-
