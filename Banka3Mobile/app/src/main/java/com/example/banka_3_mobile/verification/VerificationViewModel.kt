@@ -34,6 +34,7 @@ class VerificationViewModel @Inject constructor(
     }
 
     init {
+        fetchUserInfo()
         fetchRequests()
         observeEvents()
     }
@@ -49,6 +50,24 @@ class VerificationViewModel @Inject constructor(
             }
         }
     }
+
+    private fun fetchUserInfo() {
+        viewModelScope.launch {
+            try {
+                val user = withContext(Dispatchers.IO) {
+                    userRepository.getUser()
+                }
+                setState { copy (activeRequests = activeRequests,
+                    requestHistory = requestHistory,
+                    userId = user.id) }
+            } catch (e: Exception) {
+                setState { copy(error = e.message) }
+                Log.e("raf", "Error fetching user: ${e.message}")
+            }
+
+        }
+    }
+
 
     private fun fetchRequests() {
         viewModelScope.launch {

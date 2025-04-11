@@ -1,10 +1,10 @@
-package com.example.banka_3_mobile.bank.payments
+package com.example.banka_3_mobile.bank.loans.model
 
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class PaymentPageResponse(
-    val content: List<PaymentGetResponse>
+data class LoanRequestPageResponse(
+    val content: List<LoanRequestGetResponse>
     // val pageable: Pageable,
     // val last: Boolean,
     // val totalPages: Int,
@@ -16,4 +16,3 @@ data class PaymentPageResponse(
     // val numberOfElements: Int,
     // val empty: Boolean
 )
-
