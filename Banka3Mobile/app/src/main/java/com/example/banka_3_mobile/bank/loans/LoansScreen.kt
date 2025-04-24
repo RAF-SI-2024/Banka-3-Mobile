@@ -57,7 +57,7 @@ fun LoansScreen(
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .padding(horizontal = 16.dp, vertical = 8.dp).padding(top = 32.dp, bottom = 80.dp),
+            .padding(horizontal = 16.dp, vertical = 8.dp).padding(top = 32.dp, bottom = 100.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
 

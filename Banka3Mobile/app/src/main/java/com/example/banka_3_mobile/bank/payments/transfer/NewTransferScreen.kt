@@ -52,7 +52,7 @@ fun NewTransferScreen(
     eventPublisher: (uiEvent: NewTransferContract.NewTransferUiEvent) -> Unit,
     onClose: () -> Unit
 ) {
-    Surface(modifier = Modifier.fillMaxSize()) {
+    Surface(modifier = Modifier.fillMaxSize().padding(bottom = 70.dp)) {
         Column(
             modifier = Modifier
                 .fillMaxSize()

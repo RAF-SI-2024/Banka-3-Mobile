@@ -63,7 +63,7 @@ fun MyPortfolioScreen(
     val totalProfit = state.securities.sumOf { it.profit.toDouble() }.toFloat()
     val tax = totalProfit * 0.15f
 
-    Surface(modifier = Modifier.fillMaxSize()) {
+    Surface(modifier = Modifier.fillMaxSize().padding(bottom = 50.dp)) {
         Column(
             modifier = Modifier
                 .fillMaxSize()

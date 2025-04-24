@@ -17,7 +17,7 @@ interface UserApi {
         @Body request: LoginPostRequest
     ): LoginPostResponse
 
-   @GET("admin/clients/me")
+    @GET("admin/clients/me")
     suspend fun getUser(): ClientGetResponse
 
     @POST("auth/check-token")
