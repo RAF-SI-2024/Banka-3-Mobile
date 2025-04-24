@@ -6,6 +6,8 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.navigation
 import com.example.banka_3_mobile.bank.payments.details.paymentDetailsPage
 import com.example.banka_3_mobile.bank.payments.home.paymentHomePage
+import com.example.banka_3_mobile.bank.payments.ips.create.ipsCreate
+import com.example.banka_3_mobile.bank.payments.ips.scan.ipsScan
 import com.example.banka_3_mobile.bank.payments.new_payment.newPaymentPage
 import com.example.banka_3_mobile.bank.payments.payee.payeePage
 import com.example.banka_3_mobile.bank.payments.transfer.newTransferPage
@@ -43,6 +45,15 @@ fun NavGraphBuilder.paymentNavigation(
         navController = navController
     )
 
+    ipsCreate(
+        route = "ips/create",
+        navController = navController,
+    )
+
+    ipsScan(
+        route = "ips/scan",
+        navController = navController,
+    )
 }
 
 inline val SavedStateHandle.paymentId: String

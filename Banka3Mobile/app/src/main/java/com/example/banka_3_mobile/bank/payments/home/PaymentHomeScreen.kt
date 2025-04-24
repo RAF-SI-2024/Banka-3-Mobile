@@ -1,5 +1,6 @@
 package com.example.banka_3_mobile.bank.payments.home
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -24,6 +25,8 @@ import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.CurrencyExchange
 import androidx.compose.material.icons.filled.Payments
 import androidx.compose.material.icons.filled.PersonPin
+import androidx.compose.material.icons.filled.QrCode
+import androidx.compose.material.icons.filled.QrCodeScanner
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.material.icons.filled.SwapCalls
 import androidx.compose.material3.AlertDialog
@@ -32,10 +35,12 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -82,27 +87,48 @@ fun NavGraphBuilder.paymentHomePage(
         },
         onPayeesClick = {
             navController.navigate("payee")
+        },
+        onIpsCreateClick = {
+            navController.navigate("ips/create")
+        },
+        onIpsScanClick = {
+            navController.navigate("ips/scan")
         }
         )
 }
 
 
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun PaymentHomeScreen(
     state: PaymentHomeContract.PaymentHomeUiState,
     eventPublisher: (uiEvent: PaymentHomeContract.PaymentHomeUiEvent) -> Unit,
     onNewPaymentClick: () -> Unit,
     onNewTransferClick: () -> Unit,
-    onPayeesClick: () -> Unit
+    onPayeesClick: () -> Unit,
+    onIpsCreateClick: () -> Unit,
+    onIpsScanClick: () -> Unit,
 ) {
 
-    Surface(
-        modifier = Modifier.fillMaxSize(),
-        content = {
-
+    Scaffold(
+        modifier = Modifier.padding(bottom = 70.dp),
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = onIpsScanClick,
+                containerColor = MaterialTheme.colorScheme.primary,
+                //modifier = Modifier.padding(bottom = 10.dp),
+            ) {
+                Icon(
+                    imageVector = Icons.Default.QrCodeScanner,
+                    contentDescription = "Scan IPS Code"
+                )
+            }
+        }
+    ) {  innerPadding ->
             Column(
                 modifier = Modifier
                     .fillMaxSize()
+                    .padding(innerPadding)
                     .padding(16.dp)
                     .padding(top = 24.dp)
             ) {
@@ -121,6 +147,10 @@ fun PaymentHomeScreen(
                     titleText = "Your Payees",
                     bottomText = "Manage payment recipients.",
                     imageVector = Icons.Default.PersonPin)
+                PaymentActionCard(onClick = onIpsCreateClick,
+                    titleText = "Create IPS Code",
+                    bottomText = "Create a scannable QR Code to receive payments.",
+                    imageVector = Icons.Default.QrCode)
 
                 Spacer(modifier = Modifier.height(24.dp))
 
@@ -202,7 +232,7 @@ fun PaymentHomeScreen(
 
                 }
             }
-        })
+        }
     if (state.showExchangeRatesDialog) {
         /*AlertDialog(
             onDismissRequest = { eventPublisher(PaymentHomeContract.PaymentHomeUiEvent.CloseExchangeRateDialog)},

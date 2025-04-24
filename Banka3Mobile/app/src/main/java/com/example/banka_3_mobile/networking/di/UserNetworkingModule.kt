@@ -28,17 +28,6 @@ object UserNetworkingModule {
         accountDataStore: AccountDataStore
     ): OkHttpClient {
         return OkHttpClient.Builder()
-            /*.addInterceptor {
-                chain ->
-                val token = runBlocking {
-                    accountDataStore.data.first().token
-                }
-                val requestBuilder = chain.request().newBuilder()
-                if (!token.isNullOrEmpty()) {
-                    requestBuilder.addHeader("Authorization", "Bearer $token")
-                }
-                chain.proceed(requestBuilder.build())
-            }*/
             .addInterceptor { chain ->
                 val request = chain.request()
                 val customUserAgent = "MobileApp/1.0"
@@ -77,8 +66,7 @@ object UserNetworkingModule {
     ): Retrofit {
         Log.d("raf", "Provide retrofit for user")
         return Retrofit.Builder()
-            //.baseUrl("http://localhost:8080/api/")
-            .baseUrl("http://10.0.2.2:8080/api/")
+            .baseUrl(environmentProd.userUrl)
             .client(okHttpClient)
             .addConverterFactory(AppJson.asConverterFactory("application/json".toMediaType()))
             .build()

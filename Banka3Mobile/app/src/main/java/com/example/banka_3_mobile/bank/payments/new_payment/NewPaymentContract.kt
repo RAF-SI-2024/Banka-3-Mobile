@@ -1,7 +1,6 @@
 package com.example.banka_3_mobile.bank.payments.new_payment
 
 import com.example.banka_3_mobile.bank.model.AccountGetResponse
-import com.example.banka_3_mobile.bank.payments.home.model.ExchangeRateGetResponse
 
 interface NewPaymentContract {
     data class NewPaymentUiState(

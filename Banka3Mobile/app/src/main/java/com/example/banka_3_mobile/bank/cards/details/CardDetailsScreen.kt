@@ -84,7 +84,7 @@ fun CardDetailsScreen(
 ) {
     var detailsVisible by remember { mutableStateOf(false) }
     Surface(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier.fillMaxSize().padding(bottom = 60.dp),
         content = {
     LazyColumn(
         modifier = Modifier
@@ -194,11 +194,9 @@ fun FlippableCreditCard(
                         tint = MaterialTheme.colorScheme.tertiaryContainer
                     )
                     Spacer(modifier = Modifier.weight(1f))
-                    //Spacer(modifier = Modifier.width(10.dp))
                     Text(
                         text = "Banka-3",
                         modifier = Modifier
-                            //.padding(top = 4.dp)
                             .graphicsLayer { alpha = animateFront },
                        style = MaterialTheme.typography.headlineMedium,
                         color = MaterialTheme.colorScheme.tertiaryContainer,

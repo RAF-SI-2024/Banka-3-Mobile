@@ -14,7 +14,6 @@ import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
-import javax.inject.Inject
 import javax.inject.Named
 import javax.inject.Singleton
 
@@ -35,7 +34,7 @@ object BankNetworkingModule {
                     accountDataStore.data.first().token
                 }
                 val requestBuilder = chain.request().newBuilder()
-                if (!token.isNullOrEmpty()) {
+                if (token.isNotEmpty()) {
                     requestBuilder.addHeader("Authorization", "Bearer $token")
                 }
                 chain.proceed(requestBuilder.build())
@@ -56,8 +55,7 @@ object BankNetworkingModule {
     ) : Retrofit {
         Log.d("raf", "Provide retrofit for bank")
         return Retrofit.Builder()
-           // .baseUrl("http://localhost:8082/api/")
-            .baseUrl("http://10.0.2.2:8082/api/")
+            .baseUrl(environmentProd.bankUrl)
             .client(okHttpClient)
             .addConverterFactory(AppJson.asConverterFactory("application/json".toMediaType()))
             .build()
