@@ -384,8 +384,8 @@ fun AccountDetails(
                     value = if (detailsVisible) account.monthlyLimit.toString() else maskString(account.monthlyLimit.toString())
                 )
                 DetailRow(label = "Currency", value = account.currencyCode)
-                DetailRow(label = "Created", value = account.creationDate)
-                DetailRow(label = "Expires", value = account.expirationDate)
+                account.creationDate?.let { DetailRow(label = "Created", value = it) }
+                account.expirationDate?.let { DetailRow(label = "Expires", value = it) }
                 DetailRow(label = "Status", value = account.status.name)
                 DetailRow(label = "Ownership", value = account.ownershipType)
                 DetailRow(label = "Category", value = account.accountCategory)
